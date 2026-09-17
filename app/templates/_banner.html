@@ -1,0 +1,4 @@
+{# Usage: {% with err=company_err %}{% include "_banner.html" %}{% endwith %} #}
+{% if err %}
+<div class="banner {{ err.kind }}"><strong>{{ err.title }}</strong>{{ err.detail }}</div>
+{% endif %}

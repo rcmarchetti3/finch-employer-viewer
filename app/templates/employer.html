@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}{{ provider_name }} · Finch Employer Viewer{% endblock %}
+
+{% block header %}
+  <span class="pill">{{ provider_name }}</span>
+  <span class="hint" style="margin:0">connection {{ connection.connection_id }} · auth: {{ connection.authentication_type | display }}</span>
+  <span class="spacer"></span>
+  <form method="post" action="/disconnect"><button class="ghost" type="submit">Disconnect</button></form>
+{% endblock %}
+
+{% block content %}
+<div class="grid">
+  <div>
+    <section class="card">
+      <h2>Company</h2>
+      {% with err=company_err %}{% include "_banner.html" %}{% endwith %}
+      {% if company %}
+      {% set c = company %}
+      <p class="hint">{{ c | missing_count(['legal_name','entity','ein','primary_email','primary_phone_number','departments','locations','accounts']) }} of 8 fields not provided by this provider.</p>
+      <dl>
+        <dt>Finch ID</dt><dd>{{ c.id | display }}</dd>
+        <dt>Legal name</dt><dd>{{ c.legal_name | display }}</dd>
+        <dt>Entity type</dt><dd>{{ (c.entity or {}).type | display }}</dd>
+        <dt>Entity subtype</dt><dd>{{ (c.entity or {}).subtype | display }}</dd>
+        <dt>EIN</dt><dd>{{ c.ein | display }}</dd>
+        <dt>Primary email</dt><dd>{{ c.primary_email | display }}</dd>
+        <dt>Primary phone</dt><dd>{{ c.primary_phone_number | display }}</dd>
+      </dl>
+
+      <h3>Departments</h3>
+      {% if c.departments %}
+      <ul class="plain">
+        {% for d in c.departments %}
+        <li>{{ d.name | display }}{% if d.parent and d.parent.name %} <span class="hint" style="display:inline">(parent: {{ d.parent.name }})</span>{% endif %}</li>
+        {% endfor %}
+      </ul>
+      {% else %}<span class="missing">Not provided</span>{% endif %}
+
+      <h3>Locations</h3>
+      {% if c.locations %}
+      <ul class="plain">
+        {% for loc in c.locations %}
+        <li>{% if loc.name %}<strong>{{ loc.name }}</strong>: {% endif %}{{ loc | address }}</li>
+        {% endfor %}
+      </ul>
+      {% else %}<span class="missing">Not provided</span>{% endif %}
+
+      <h3>Bank accounts</h3>
+      {% if c.accounts %}
+      <table>
+        <tr><th>Institution</th><th>Account name</th><th>Type</th><th>Routing</th><th>Account #</th></tr>
+        {% for a in c.accounts %}
+        <tr>
+          <td>{{ a.institution_name | display }}</td>
+          <td>{{ a.account_name | display }}</td>
+          <td>{{ a.account_type | display }}</td>
+          <td>{{ a.routing_number | display }}</td>
+          <td>{{ a.account_number | display }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+      {% else %}<span class="missing">Not provided</span>{% endif %}
+      {% endif %}
+    </section>
+
+    <section class="card">
+      <h2>Directory</h2>
+      {% with err=directory_err %}{% include "_banner.html" %}{% endwith %}
+      {% if directory is not none and not directory_err %}
+        {% if paging %}<p class="hint">Showing {{ directory | length }} of {{ paging.count }} employees. Click a row to load their details.</p>{% endif %}
+        {% if directory %}
+        <table id="directory">
+          <thead><tr><th>Name</th><th>Department</th><th>Manager</th><th>Active</th></tr></thead>
+          <tbody>
+          {% for e in directory %}
+          <tr class="row" data-id="{{ e.id }}" tabindex="0">
+            <td>{{ e.first_name | display }} {% if e.middle_name %}{{ e.middle_name }} {% endif %}{{ e.last_name | display }}</td>
+            <td>{{ (e.department or {}).name | display }}</td>
+            <td>{{ names.get((e.manager or {}).id) | display }}</td>
+            <td>{{ e.is_active | display }}</td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div class="empty">The directory is empty for this connection.</div>
+        {% endif %}
+      {% endif %}
+    </section>
+  </div>
+
+  <div>
+    <section class="card" id="employee-panel">
+      <div class="empty">Select an employee from the directory to see their individual and employment details.</div>
+    </section>
+  </div>
+</div>
+
+<script>
+  // Tiny bit of JS: clicking a directory row fetches a server-rendered
+  // partial for that employee and drops it into the right-hand panel.
+  // The browser never calls Finch directly and never sees the access token.
+  const panel = document.getElementById('employee-panel');
+  const rows = document.querySelectorAll('tr.row');
+  async function load(row) {
+    rows.forEach(r => r.classList.remove('selected'));
+    row.classList.add('selected');
+    panel.innerHTML = '<div class="empty loading">Loading employee…</div>';
+    try {
+      const res = await fetch('/employee/' + encodeURIComponent(row.dataset.id));
+      panel.innerHTML = await res.text();
+      if (res.status === 401) setTimeout(() => location.href = '/', 1500);
+    } catch (e) {
+      panel.innerHTML = '<div class="banner error"><strong>Network error</strong>' + e + '</div>';
+    }
+  }
+  rows.forEach(r => {
+    r.addEventListener('click', () => load(r));
+    r.addEventListener('keydown', ev => { if (ev.key === 'Enter') load(r); });
+  });
+</script>
+{% endblock %}

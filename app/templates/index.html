@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card" style="max-width:520px;margin:40px auto;">
+  <h2>Connect to a sandbox provider</h2>
+  <p class="hint">Creates a Finch Sandbox connection for the provider you pick and exchanges it for an access token scoped to:
+    {% for p in products %}<span class="pill">{{ p }}</span>{% endfor %}
+    <span class="pill off">payment</span><span class="pill off">pay_statement</span>
+  </p>
+
+  {% if error %}
+  <div class="banner error"><strong>Connection failed</strong>{{ error }}</div>
+  {% endif %}
+
+  <form method="post" action="/connect">
+    <label for="provider_id">Provider</label>
+    <select id="provider_id" name="provider_id" required style="width:100%">
+      {% for p in providers %}
+      <option value="{{ p.id }}">{{ p.name }} ({{ p.id }})</option>
+      {% endfor %}
+    </select>
+
+    <label for="employee_size">Employee count for the sandbox</label>
+    <input id="employee_size" name="employee_size" type="number" min="1" max="250" value="20">
+
+    <div style="margin-top:18px"><button type="submit">Create connection</button></div>
+  </form>
+</div>
+{% endblock %}

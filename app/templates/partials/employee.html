@@ -1,0 +1,71 @@
+{# Server-rendered partial for one employee. Loaded into #employee-panel. #}
+{% set i = individual %}
+{% set e = employment %}
+
+<h2>
+  {% if i %}{{ i.first_name | display }} {{ i.last_name | display }}{% elif e %}{{ e.first_name | display }} {{ e.last_name | display }}{% else %}Employee{% endif %}
+</h2>
+
+<h3>Individual</h3>
+{% with err=individual_err %}{% include "_banner.html" %}{% endwith %}
+{% if i %}
+<p class="hint">{{ i | missing_count(['first_name','middle_name','last_name','preferred_name','emails','phone_numbers','gender','ethnicity','marital_status','dob','residence']) }} of 11 fields not provided.</p>
+<dl>
+  <dt>Finch ID</dt><dd>{{ i.id | display }}</dd>
+  <dt>First name</dt><dd>{{ i.first_name | display }}</dd>
+  <dt>Middle name</dt><dd>{{ i.middle_name | display }}</dd>
+  <dt>Last name</dt><dd>{{ i.last_name | display }}</dd>
+  <dt>Preferred name</dt><dd>{{ i.preferred_name | display }}</dd>
+  <dt>Date of birth</dt><dd>{{ i.dob | display }}</dd>
+  <dt>Gender</dt><dd>{{ i.gender | display }}</dd>
+  <dt>Ethnicity</dt><dd>{{ i.ethnicity | display }}</dd>
+  <dt>Marital status</dt><dd>{{ i.marital_status | display }}</dd>
+  <dt>Emails</dt>
+  <dd>
+    {% if i.emails %}
+      {% for m in i.emails %}{{ m.data | display }} <span class="pill">{{ m.type | display }}</span><br>{% endfor %}
+    {% else %}<span class="missing">Not provided</span>{% endif %}
+  </dd>
+  <dt>Phone numbers</dt>
+  <dd>
+    {% if i.phone_numbers %}
+      {% for p in i.phone_numbers %}{{ p.data | display }} <span class="pill">{{ p.type | display }}</span><br>{% endfor %}
+    {% else %}<span class="missing">Not provided</span>{% endif %}
+  </dd>
+  <dt>Residence</dt><dd>{{ i.residence | address }}</dd>
+</dl>
+{% endif %}
+
+<h3>Employment</h3>
+{% with err=employment_err %}{% include "_banner.html" %}{% endwith %}
+{% if e %}
+<p class="hint">{{ e | missing_count(['title','manager','department','employment','start_date','end_date','is_active','employment_status','class_code','location','income','income_history','custom_fields']) }} of 13 fields not provided.</p>
+<dl>
+  <dt>Title</dt><dd>{{ e.title | display }}</dd>
+  <dt>Department</dt><dd>{{ (e.department or {}).name | display }}</dd>
+  <dt>Manager</dt><dd>{{ names.get((e.manager or {}).id) | display }}</dd>
+  <dt>Employment type</dt><dd>{{ (e.employment or {}).type | display }}</dd>
+  <dt>Employment subtype</dt><dd>{{ (e.employment or {}).subtype | display }}</dd>
+  <dt>Status</dt><dd>{{ e.employment_status | display }}</dd>
+  <dt>Active</dt><dd>{{ e.is_active | display }}</dd>
+  <dt>Start date</dt><dd>{{ e.start_date | display }}</dd>
+  <dt>End date</dt><dd>{{ e.end_date | display }}</dd>
+  <dt>Latest rehire</dt><dd>{{ e.latest_rehire_date | display }}</dd>
+  <dt>FLSA status</dt><dd>{{ e.flsa_status | display }}</dd>
+  <dt>Class code</dt><dd>{{ e.class_code | display }}</dd>
+  <dt>Work location</dt><dd>{{ e.location | address }}</dd>
+  <dt>Income</dt><dd>{{ e.income | money }}{% if e.income and e.income.effective_date %} <span class="hint" style="display:inline">(effective {{ e.income.effective_date }})</span>{% endif %}</dd>
+  <dt>Income history</dt>
+  <dd>
+    {% if e.income_history %}
+      {% for h in e.income_history %}{{ h | money }}{% if h.effective_date %} <span class="hint" style="display:inline">(effective {{ h.effective_date }})</span>{% endif %}<br>{% endfor %}
+    {% else %}<span class="missing">Not provided</span>{% endif %}
+  </dd>
+  <dt>Custom fields</dt>
+  <dd>
+    {% if e.custom_fields %}
+      {% for f in e.custom_fields %}<strong>{{ f.name | display }}</strong>: {{ f.value | display }}<br>{% endfor %}
+    {% else %}<span class="missing">Not provided</span>{% endif %}
+  </dd>
+</dl>
+{% endif %}

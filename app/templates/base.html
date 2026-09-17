@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Finch Employer Viewer{% endblock %}</title>
+  <style>
+    :root { --ink:#1b1f24; --muted:#6b7280; --line:#e5e7eb; --bg:#f7f7f8; --card:#fff; --accent:#0f6fff; --warn-bg:#fff7e6; --warn:#8a5a00; --err-bg:#fdecec; --err:#9b1c1c; }
+    * { box-sizing:border-box; }
+    body { margin:0; font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; color:var(--ink); background:var(--bg); }
+    header { background:var(--card); border-bottom:1px solid var(--line); padding:12px 24px; display:flex; align-items:center; gap:16px; }
+    header h1 { font-size:17px; margin:0; }
+    header .spacer { flex:1; }
+    main { max-width:1200px; margin:24px auto; padding:0 24px; }
+    .grid { display:grid; grid-template-columns: 1fr 1fr; gap:20px; }
+    @media (max-width: 900px) { .grid { grid-template-columns:1fr; } }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:18px 20px; margin-bottom:20px; }
+    .card h2 { margin:0 0 12px; font-size:16px; }
+    .card h3 { margin:16px 0 8px; font-size:14px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+    dl { display:grid; grid-template-columns: max-content 1fr; gap:6px 16px; margin:0; }
+    dt { color:var(--muted); }
+    dd { margin:0; }
+    .missing { color:var(--muted); font-style:italic; }
+    .hint { color:var(--muted); font-size:13px; margin:0 0 10px; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); }
+    th { color:var(--muted); font-weight:600; font-size:13px; }
+    tr.row { cursor:pointer; }
+    tr.row:hover { background:#f0f5ff; }
+    tr.row.selected { background:#e6efff; }
+    .banner { border-radius:6px; padding:12px 14px; margin-bottom:14px; }
+    .banner.not_implemented { background:var(--warn-bg); color:var(--warn); border:1px solid #f3d99b; }
+    .banner.unauthorized, .banner.error { background:var(--err-bg); color:var(--err); border:1px solid #f5b5b5; }
+    .banner strong { display:block; margin-bottom:2px; }
+    .pill { display:inline-block; font-size:12px; padding:2px 8px; border-radius:999px; background:#eef2ff; color:#3730a3; margin-right:6px; }
+    .pill.off { background:#f3f4f6; color:var(--muted); text-decoration:line-through; }
+    button, select, input { font:inherit; }
+    button { background:var(--accent); color:#fff; border:0; border-radius:6px; padding:8px 14px; cursor:pointer; }
+    button.ghost { background:transparent; color:var(--ink); border:1px solid var(--line); }
+    select, input[type=number] { padding:8px 10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+    label { display:block; margin:12px 0 4px; color:var(--muted); font-size:13px; }
+    .empty { color:var(--muted); padding:24px; text-align:center; }
+    .loading { color:var(--muted); font-size:13px; }
+    ul.plain { margin:0; padding-left:18px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Finch Employer Viewer</h1>
+    {% block header %}{% endblock %}
+  </header>
+  <main>{% block content %}{% endblock %}</main>
+</body>
+</html>
